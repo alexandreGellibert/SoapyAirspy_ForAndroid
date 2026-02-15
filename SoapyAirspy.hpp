@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <atomic>
 
-#include <libairspy/airspy.h>
+#include <airspy.h>
 
 #define DEFAULT_BUFFER_BYTES 262144
 #define DEFAULT_NUM_BUFFERS 8

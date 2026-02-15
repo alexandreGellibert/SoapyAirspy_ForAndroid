@@ -6,14 +6,18 @@ cmake_minimum_required(VERSION 2.8.12...3.10)
 
 project(SoapyAirspy CXX)
 
-find_package(SoapySDR "0.4.0" NO_MODULE REQUIRED)
-if(NOT SoapySDR_FOUND)
-    message(FATAL_ERROR "Soapy SDR development files not found...")
+if(NOT ANDROID)
+    find_package(SoapySDR "0.4.0" NO_MODULE REQUIRED)
+    if(NOT SoapySDR_FOUND)
+        message(FATAL_ERROR "Soapy SDR development files not found...")
+    endif()
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package(LibAIRSPY REQUIRED)
+if(NOT ANDROID)
+    find_package(LibAIRSPY REQUIRED)
+endif ()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${LibAIRSPY_INCLUDE_DIRS})
 
@@ -47,13 +51,36 @@ endif(APPLE)
 
 list(APPEND AIRSPY_LIBS ${LibAIRSPY_LIBRARIES})
 
-SOAPY_SDR_MODULE_UTIL(
-    TARGET airspySupport
-    SOURCES
-        SoapyAirspy.hpp
-        Registration.cpp
-        Settings.cpp
-        Streaming.cpp
-    LIBRARIES
-        ${AIRSPY_LIBS}
-)
+if (ANDROID)
+    # SoapyAirspy est un MODULE (plugin)
+    add_library(SoapyAirspy MODULE
+            SoapyAirspy.hpp
+            Registration.cpp
+            Settings.cpp
+            Streaming.cpp
+    )
+
+    # Includes
+    target_include_directories(SoapyAirspy PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../libairspy/libairspy/src
+    )
+
+    # Link libraries
+    target_link_libraries(SoapyAirspy PRIVATE
+            SoapySDR
+            airspy
+            log
+            android
+    )
+else()
+    SOAPY_SDR_MODULE_UTIL(
+            TARGET airspySupport
+            SOURCES
+            SoapyAirspy.hpp
+            Registration.cpp
+            Settings.cpp
+            Streaming.cpp
+            LIBRARIES
+            ${AIRSPY_LIBS}
+    )
+endif ()
