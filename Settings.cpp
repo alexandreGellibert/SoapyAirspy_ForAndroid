@@ -50,6 +50,24 @@ SoapyAirspy::SoapyAirspy(const SoapySDR::Kwargs &args)
     std::stringstream serialstr;
     serialstr.str("");
 
+#if defined(ANDROID)
+    if (args.count("fd") != 0)
+    {
+        int fd = 0;
+        try {
+            fd = std::stoi(args.at("fd"));
+        } catch (const std::invalid_argument &) {
+            throw std::runtime_error("fd is not an int");
+        } catch (const std::out_of_range &) {
+            throw std::runtime_error("fd value of out range");
+        }
+
+        if (fd <= 0 || airspy_open_fd(&dev, fd) != AIRSPY_SUCCESS) {
+            throw std::runtime_error("Unable to open AirSpy device with fd " + args.at("fd"));
+        }
+        SoapySDR_logf(SOAPY_SDR_DEBUG, "Found AirSpy device: fd = %d", fd);
+    }
+#else
     if (args.count("serial") != 0)
     {
         try {
@@ -65,6 +83,7 @@ SoapyAirspy::SoapyAirspy(const SoapySDR::Kwargs &args)
         }
         SoapySDR_logf(SOAPY_SDR_DEBUG, "Found AirSpy device: serial = %" PRIx64, serial);
     }
+#endif
     else
     {
         if (airspy_open(&dev) != AIRSPY_SUCCESS) {
