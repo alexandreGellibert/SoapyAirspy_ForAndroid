@@ -52,7 +52,7 @@ endif(APPLE)
 list(APPEND AIRSPY_LIBS ${LibAIRSPY_LIBRARIES})
 
 if (ANDROID)
-    # SoapyAirspy est un MODULE (plugin)
+    # SoapyAirspy is a module on Android
     add_library(SoapyAirspy MODULE
             SoapyAirspy.hpp
             Registration.cpp
